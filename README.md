@@ -30,17 +30,38 @@ dotnet add package Shotgun
 
 ## Documentation
 
-TODO
+So you done did scaffolded a table with entity framework and you wanna make it available via http? Hoot nany lemme help ya out.
+After running 
+```csharp
+dotnet ef scaffold "somedb" -t SomeTable
+```
+Change the generated code for the table to
+
+ ```csharp
+public class SomeTable : IEntity<int>
+{
+  public override int Id {get; set}
+}
+```
+If your pk is not named Id change it to ID in the class and update the dbcontext model mapping to refrence the sql pk name.
+Next create the repo
+```csharp
+public class SomeTableRepository : ShotgunRepo<SomeDbContext, SomeTable, int>
+{
+}
+```
+Next create the controller
+```csharp
+public class SomeTableController: Shotgun<SomeTableRepository, SomeTable, int>
+{
+}
+```
+Also in your program.cs you need to dependency inject ``` SomeDbContext, SomeTableRepository ```
+Now you should have some of the more common functionality from a REST API for sometable.
+If you want to remove some of the features you can just override the controller endpoints or just use the repository in your own controller.
+
 
 ## Examples
 
 TODO
 
-
-## License
-
-Copyright © Patrik Svensson, Phil Scott, Nils Andresen
-
-`Shotgun` is provided as-is under the MIT license. For more information see LICENSE.
-
-* SixLabors.ImageSharp, a library which `Shotgun` relies upon, is licensed under Apache 2.0 when distributed as part of `Shotgun`. The Six Labors Split License covers all other usage, see: https://github.com/SixLabors/ImageSharp/blob/master/LICENSE 
