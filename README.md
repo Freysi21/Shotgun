@@ -35,6 +35,7 @@ After running
 ```csharp
 dotnet ef scaffold "somedb" -t SomeTable
 ```
+
 Change the generated code for the table to
 
  ```csharp
@@ -43,21 +44,27 @@ public class SomeTable : IEntity<int>
   public override int Id {get; set}
 }
 ```
+
 If your pk is not named Id change it to ID in the class and update the dbcontext model mapping to refrence the sql pk name.
 Next create the repo
+
 ```csharp
 public class SomeTableRepository : ShotgunRepo<SomeDbContext, SomeTable, int>
 {
 }
 ```
+
 Next create the controller
+
 ```csharp
 public class SomeTableController: Shotgun<SomeTableRepository, SomeTable, int>
 {
 }
 ```
-Also in your program.cs you need to dependency inject ``` SomeDbContext, SomeTableRepository ```
-Now you should have some of the more common functionality from a REST API for sometable.
+
+Also in your program.cs you need to dependency inject ``` SomeDbContext, SomeTableRepository ```.
+
+After all this you should have some of the more common functionality from a REST API for sometable.
 If you want to remove some of the features you can just override the controller endpoints or just use the repository in your own controller.
 
 
