@@ -20,8 +20,6 @@ It is heavily inspired by REST
 * Paging
 * Exporting
 
-![Example](docs/input/assets/images/example.png)
-
 ## Installing
 
 The fastest way of getting started using `Shotgun` is to install the NuGet package.
