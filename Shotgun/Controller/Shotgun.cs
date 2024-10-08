@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Shotgun.Models;
+using Shotgun.Entity;
 using Shotgun.Repos;
 
 //File contains base implementation for CRUD(CREATE READ UPDATE DELETE) operations for a table.

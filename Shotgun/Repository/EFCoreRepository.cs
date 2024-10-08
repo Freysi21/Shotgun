@@ -8,7 +8,7 @@ using CsvHelper.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Shotgun.Expressions;
 using Shotgun.Helpers;
-using Shotgun.Models;
+using Shotgun.Entity;
 using IncludeService = Shotgun.Expressions.Include;
 using OrderbyService = Shotgun.Expressions.OrderBy;
 using RangeService = Shotgun.Expressions.Range;
