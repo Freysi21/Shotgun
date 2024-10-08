@@ -3,55 +3,56 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Shotgun.Entity;
 
-namespace Shotgun.Models
+
+namespace Shotgun.EntityExtensions
 {
     //Base interface for all models used on api too implement
     //Each model will implement this interface so the generic repository
     //implementation can make queries for id fields on our models
 
 
-    public abstract class IEntity
+    public static class EntityExtensions
     {
-        public async Task GetSingleNavigations(DbContext context)
+        public static async Task GetSingleNavigations<T>(this IEntity<T> entity, DbContext context)
         {
-            var singles = GetSingleNavigationsAsStrings();
+            var singles = entity.GetSingleNavigationsAsStrings<T>();
 
             foreach (var prop in singles)
             {
-                await context.Entry(this).Reference(prop).LoadAsync();
-                var propEntry = this.GetType().GetProperty(prop).GetValue(this, null);
-                if (propEntry != null && (propEntry as IEntity) != null)
+                await context.Entry(entity).Reference(prop).LoadAsync();
+                var propEntry = entity.GetType().GetProperty(prop).GetValue(entity, null);
+                if (propEntry != null && propEntry is IEntity<T> nestedEntity)
                 {
-                    await (propEntry as IEntity).GetSingleNavigations(context);
-                    await (propEntry as IEntity).GetCollectionNavigations(context);
+                    await nestedEntity.GetSingleNavigations(context);
+                    await nestedEntity.GetCollectionNavigations(context);
                 }
             }
-
         }
-        public async Task GetCollectionNavigations(DbContext context)
+
+        public static async Task GetCollectionNavigations<T>(this IEntity<T> entity, DbContext context)
         {
-            var collections = GetCollectionNavigationsAsStrings();
+            var collections = entity.GetCollectionNavigationsAsStrings();
 
             foreach (var prop in collections)
             {
-                await context.Entry(this).Collection(prop).LoadAsync();
-                var propList = GetType().GetProperty(prop).GetValue(this) as IEnumerable<IEntity>;
-
-                if (propList != null && propList.Count() > 0)
+                await context.Entry(entity).Collection(prop).LoadAsync();
+                var propEntries = entity.GetType().GetProperty(prop).GetValue(entity, null) as IEnumerable<IEntity<T>>;
+                if (propEntries != null)
                 {
-                    foreach (var item in propList)
+                    foreach (var propEntry in propEntries)
                     {
-                        await item.GetCollectionNavigations(context);
-                        await item.GetCollectionNavigations(context);
+                        await propEntry.GetSingleNavigations(context);
+                        await propEntry.GetCollectionNavigations(context);
                     }
                 }
             }
         }
 
-        public List<string> GetCollectionNavigationsAsStrings()
+        public static List<string> GetCollectionNavigationsAsStrings<T>(this IEntity<T> entity)
         {
-            var properties = GetType().GetProperties();
+            var properties = entity.GetType().GetProperties();
             var navigationPropertyInfoList = properties.Where(
                 prop =>
                     prop.IsDefined(typeof(NavigationPropertyAttribute))
@@ -68,9 +69,9 @@ namespace Shotgun.Models
             return propsNames;
         }
 
-        public List<string> GetSingleNavigationsAsStrings()
+        public static List<string> GetSingleNavigationsAsStrings<T>(this IEntity<T> entity)
         {
-            var properties = GetType().GetProperties();
+            var properties = entity.GetType().GetProperties();
             var navigationPropertyInfoList = properties.Where(
                 prop =>
                     prop.IsDefined(typeof(SingleNavigationPropertyAttribute))
@@ -86,9 +87,5 @@ namespace Shotgun.Models
 
             return propsNames;
         }
-    }
-    public abstract class IEntity<T> : IEntity
-    {
-        public abstract T Id { get; set; }
     }
 }
