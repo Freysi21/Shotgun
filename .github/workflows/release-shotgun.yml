@@ -1,4 +1,4 @@
-name: Release Shogun to NuGet
+name: Release Shotgun to NuGet
 
 on:
   release:

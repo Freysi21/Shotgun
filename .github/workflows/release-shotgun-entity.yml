@@ -1,4 +1,4 @@
-name: Release Shogun.Entity to NuGet
+name: Release Shotgun.Entity to NuGet
 
 on:
   release:
