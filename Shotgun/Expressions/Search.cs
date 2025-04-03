@@ -245,9 +245,18 @@ namespace Shotgun.Expressions
             var member = Expression.Parameter(type, "param");
             Expression expr = null;
             var props = type.GetProperties();
+            var modelPropNamesLowerCase = props.Select(p => p.Name.ToLower()).ToList();
             foreach (var entry in fieldsAndValues)
             {
                 var key = entry.Key.FirstCharToUpper();
+                if (modelPropNamesLowerCase.Contains(key.ToLower()))
+                {
+                    key = props.FirstOrDefault(p => p.Name.ToLower() == key.ToLower()).Name;
+                }
+                else
+                {
+                    key = entry.Key;
+                }
                 if (type.GetProperty(key) != null)
                 {
                     if (expr == null)
