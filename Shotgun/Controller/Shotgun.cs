@@ -33,21 +33,28 @@ namespace Shotgun.Controllers
 		/// <param name="asc"></param>
 		/// <returns></returns>
 		[HttpGet]
-		public virtual async Task<ActionResult<IEnumerable<TEntity>>> Get([FromQuery] PagingQuery page, [FromQuery] string Orderby, [FromQuery] bool asc)
+		public virtual async Task<ActionResult<IEnumerable<TEntity>>> Get([FromQuery] PagingQuery page, [FromQuery] string? Orderby = null, [FromQuery] bool asc = false)
 		{
-			var items = await repository.GetAll(page, Orderby, asc);
-			var metadata = new
+			try
 			{
-				items.TotalCount,
-				items.PageSize,
-				items.CurrentPage,
-				items.TotalPages,
-				items.HasNext,
-				items.HasPrevious
-			};
+				var items = await repository.GetAll(page, Orderby, asc);
+				var metadata = new
+				{
+					items.TotalCount,
+					items.PageSize,
+					items.CurrentPage,
+					items.TotalPages,
+					items.HasNext,
+					items.HasPrevious
+				};
 
-			Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
-			return items;
+				Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+				return items;
+			}
+			catch (InvalidOperationException ex)
+			{
+				return BadRequest(ex.Message);
+			}
 		}
 		/// <summary>
 		/// Gets specific record with id. Detail parameter set to true retrieves children records as nested properties.
@@ -159,21 +166,28 @@ namespace Shotgun.Controllers
 		/// <see cref="search"/>
 		/// <returns></returns>
 		[HttpGet("search")]
-		public virtual async Task<ActionResult<List<TEntity>>> SearchGet([FromQuery] Dictionary<string, string[]> dict, [FromQuery] string Orderby, [FromQuery] PagingQuery page, [FromQuery] bool asc, [FromQuery] Dictionary<string, string[]> dateDict)
+		public virtual async Task<ActionResult<List<TEntity>>> SearchGet([FromQuery] Dictionary<string, string[]> dict, [FromQuery] PagingQuery page, [FromQuery] string? Orderby = null, [FromQuery] bool asc = false, [FromQuery] Dictionary<string, string[]>? dateDict = null)
 		{
-			var results = await repository.Search(page, dict, Orderby, asc, dateDict);
-			var metadata = new
+			try
 			{
-				results.TotalCount,
-				results.PageSize,
-				results.CurrentPage,
-				results.TotalPages,
-				results.HasNext,
-				results.HasPrevious
-			};
+				var results = await repository.Search(page, dict, Orderby, asc, dateDict);
+				var metadata = new
+				{
+					results.TotalCount,
+					results.PageSize,
+					results.CurrentPage,
+					results.TotalPages,
+					results.HasNext,
+					results.HasPrevious
+				};
 
-			Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
-			return Ok(results);
+				Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+				return Ok(results);
+			}
+			catch (InvalidOperationException ex)
+			{
+				return BadRequest(ex.Message);
+			}
 		}
 
 		[HttpGet("OrderedSearch")]
