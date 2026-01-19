@@ -100,24 +100,15 @@ namespace Shotgun.Repos
 		public virtual IQueryable<TEntity> GetAllQuery(string? orderBy = null, bool asc = false)
 		{
 			var query = context.Set<TEntity>().Select(val => val);
-			var type = typeof(TEntity);
-			var properties = type.GetProperties();
-			var sortByDefaultPropertyInfoList = properties.Where(
-				prop =>
-					prop.IsDefined(typeof(DefaultSortPropertyAttribute))
-			).ToList();
 			if (orderBy != null && OrderbyService.PropertyExists<TEntity>(query, orderBy))
 			{
 				return asc ? OrderbyService.OrderByProperty(query, orderBy)
 				: OrderbyService.OrderByPropertyDescending(query, orderBy);
 			}
-			else if (sortByDefaultPropertyInfoList.Count > 0 && OrderbyService.PropertyExists<TEntity>(query, sortByDefaultPropertyInfoList[0].Name))
-			{
-				return OrderbyService.OrderByPropertyDescending(query, sortByDefaultPropertyInfoList[0].Name);
-			}
 			else if (orderBy == null)
 			{
-				throw new InvalidOperationException($"The Orderby field is required. Entity '{typeof(TEntity).Name}' does not have a property marked with DefaultSortPropertyAttribute.");
+				var defaultSortProperty = GetDefaultSortProperty();
+				return OrderbyService.OrderByPropertyDescending(query, defaultSortProperty);
 			}
 			return context.Set<TEntity>().AsQueryable();
 		}
@@ -158,18 +149,8 @@ namespace Shotgun.Repos
 			}
 			else if (orderBy == null)
 			{
-				var type = typeof(TEntity);
-				var properties = type.GetProperties();
-				var sortByDefaultPropertyInfoList = properties.Where(
-					prop => prop.IsDefined(typeof(DefaultSortPropertyAttribute))
-				).ToList();
-				
-				if (sortByDefaultPropertyInfoList.Count > 0 && OrderbyService.PropertyExists<TEntity>(query, sortByDefaultPropertyInfoList[0].Name))
-				{
-					return await OrderbyService.OrderByPropertyDescending(query, sortByDefaultPropertyInfoList[0].Name).ToListAsync();
-				}
-				
-				throw new InvalidOperationException($"The Orderby field is required. Entity '{typeof(TEntity).Name}' does not have a property marked with DefaultSortPropertyAttribute.");
+				var defaultSortProperty = GetDefaultSortProperty();
+				return await OrderbyService.OrderByPropertyDescending(query, defaultSortProperty).ToListAsync();
 			}
 			return await query.ToListAsync();
 		}
@@ -186,19 +167,9 @@ namespace Shotgun.Repos
 			}
 			else if (orderBy == null)
 			{
-				var type = typeof(TEntity);
-				var properties = type.GetProperties();
-				var sortByDefaultPropertyInfoList = properties.Where(
-					prop => prop.IsDefined(typeof(DefaultSortPropertyAttribute))
-				).ToList();
-				
-				if (sortByDefaultPropertyInfoList.Count > 0 && OrderbyService.PropertyExists<TEntity>(query, sortByDefaultPropertyInfoList[0].Name))
-				{
-					return asc ? await PagedList<TEntity>.ToPagedListAsync(OrderbyService.OrderByProperty(query, sortByDefaultPropertyInfoList[0].Name), page.PageNumber, page.PageSize)
-					: await PagedList<TEntity>.ToPagedListAsync(OrderbyService.OrderByPropertyDescending(query, sortByDefaultPropertyInfoList[0].Name), page.PageNumber, page.PageSize);
-				}
-				
-				throw new InvalidOperationException($"The Orderby field is required. Entity '{typeof(TEntity).Name}' does not have a property marked with DefaultSortPropertyAttribute.");
+				var defaultSortProperty = GetDefaultSortProperty();
+				return asc ? await PagedList<TEntity>.ToPagedListAsync(OrderbyService.OrderByProperty(query, defaultSortProperty), page.PageNumber, page.PageSize)
+					: await PagedList<TEntity>.ToPagedListAsync(OrderbyService.OrderByPropertyDescending(query, defaultSortProperty), page.PageNumber, page.PageSize);
 			}
 			return await PagedList<TEntity>.ToPagedListAsync(query, page.PageNumber, page.PageSize);
 		}
@@ -245,6 +216,35 @@ namespace Shotgun.Repos
 			}
 		}
 
+		protected string GetDefaultSortProperty()
+		{
+			var type = typeof(TEntity);
+			var properties = type.GetProperties();
+			
+			// First, check for DefaultSortPropertyAttribute
+			var sortByDefaultProperty = properties.FirstOrDefault(
+				prop => prop.IsDefined(typeof(DefaultSortPropertyAttribute))
+			);
+			
+			if (sortByDefaultProperty != null)
+			{
+				return sortByDefaultProperty.Name;
+			}
+			
+			// Second, check for DateTime properties
+			var dateTimeProperty = properties.FirstOrDefault(
+				prop => prop.PropertyType == typeof(DateTime) || prop.PropertyType == typeof(DateTime?)
+			);
+			
+			if (dateTimeProperty != null)
+			{
+				return dateTimeProperty.Name;
+			}
+			
+			// Finally, fallback to Id property
+			return "Id";
+		}
+
 		protected IQueryable<TEntity> SearchQuery(Dictionary<string, string[]> dict, string? orderBy = null, bool asc = false, Dictionary<string, string[]>? dateDict = null)
 		{
 			var expr = SearchService.ContainsValues<TEntity>(dict);
@@ -258,19 +258,9 @@ namespace Shotgun.Repos
 			}
 			else if (orderBy == null)
 			{
-				var type = typeof(TEntity);
-				var properties = type.GetProperties();
-				var sortByDefaultPropertyInfoList = properties.Where(
-					prop => prop.IsDefined(typeof(DefaultSortPropertyAttribute))
-				).ToList();
-				
-				if (sortByDefaultPropertyInfoList.Count > 0 && OrderbyService.PropertyExists<TEntity>(query, sortByDefaultPropertyInfoList[0].Name))
-				{
-					return asc ? OrderbyService.OrderByProperty(query, sortByDefaultPropertyInfoList[0].Name)
-					: OrderbyService.OrderByPropertyDescending(query, sortByDefaultPropertyInfoList[0].Name);
-				}
-				
-				throw new InvalidOperationException($"The Orderby field is required. Entity '{typeof(TEntity).Name}' does not have a property marked with DefaultSortPropertyAttribute.");
+				var defaultSortProperty = GetDefaultSortProperty();
+				return asc ? OrderbyService.OrderByProperty(query, defaultSortProperty)
+					: OrderbyService.OrderByPropertyDescending(query, defaultSortProperty);
 			}
 			return query;
 		}
