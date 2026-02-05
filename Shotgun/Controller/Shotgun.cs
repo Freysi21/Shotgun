@@ -86,15 +86,8 @@ namespace Shotgun.Controllers
 			{
 				return BadRequest(ModelState);
 			}
-			try
-			{
-				await repository.Put(item);
-			}
-			catch (Exception ex)
-			{
-				//TODO Inject ex Log.
-				return BadRequest("Ekki hægt að uppfæra eigindi með breyttum gildum.");
-			}
+			item = await repository.Put(item);
+
 			return Ok(item);
 		}
 
@@ -112,19 +105,10 @@ namespace Shotgun.Controllers
 				return BadRequest(ModelState);
 			}
 
-			try
-			{
-				var newItem = await repository.Add(item);
-				return CreatedAtAction("Get", new { id = newItem.Id }, newItem);
-			}
-			catch (DbUpdateException ex)
-			{
-				Exception e = ex;
-				var innermessage = "git it";
-				while (e.InnerException != null) e = e.InnerException;
-				innermessage = e.Message;
-				return Conflict(innermessage);
-			}
+
+			var newItem = await repository.Add(item);
+			return CreatedAtAction("Get", new { id = newItem.Id }, newItem);
+
 		}
 
 		/// <summary>
