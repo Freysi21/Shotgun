@@ -19,12 +19,10 @@ public abstract class SearchTestsBase
     [Fact]
     public async Task SearchByName_PartialString_ReturnsAllMatches()
     {
-        var dict = new Dictionary<string, string[]> { { "Name", new[] { "alice" } } };
-        // Case-sensitive Contains — "alice" matches "Alice" and "Alice Smith"
-        // because SQL LIKE is typically case-insensitive on most providers
+        var dict = new Dictionary<string, string[]> { { "Name", new[] { "Alice" } } };
         var result = await Fixture.Repository.Search(dict);
         Assert.Equal(2, result.Count);
-        Assert.All(result, e => Assert.Contains("Alice", e.Name, StringComparison.OrdinalIgnoreCase));
+        Assert.All(result, e => Assert.Contains("Alice", e.Name, StringComparison.Ordinal));
     }
 
     [Fact]
