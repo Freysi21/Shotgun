@@ -8,7 +8,8 @@
       "Bash(dotnet test *)",
       "Bash(grep -A5 \"IsActive\\\\|WHERE\\\\|ORDER BY\" /tmp/efcore_mysql.txt | head -40)",
       "Read(//tmp/**)",
-      "Bash(Select-String \"Failed \")"
+      "Bash(Select-String \"Failed \")",
+      "Bash(dotnet restore *)"
     ]
   }
 }
