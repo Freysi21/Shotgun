@@ -47,8 +47,11 @@ namespace Shotgun.Controllers
 					items.HasNext,
 					items.HasPrevious
 				};
-
-				Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+				if(Response.Headers.Keys.Contains("X-Pagination"))
+                {
+                    Response.Headers.Remove("X-Pagination");
+                }
+                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
 				return items;
 			}
 			catch (InvalidOperationException ex)
@@ -164,8 +167,11 @@ namespace Shotgun.Controllers
 					results.HasNext,
 					results.HasPrevious
 				};
-
-				Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+                if (Response.Headers.Keys.Contains("X-Pagination"))
+                {
+                    Response.Headers.Remove("X-Pagination");
+                }
+                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
 				return Ok(results);
 			}
 			catch (InvalidOperationException ex)
@@ -193,8 +199,11 @@ namespace Shotgun.Controllers
 				results.HasNext,
 				results.HasPrevious
 			};
-
-			Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+            if (Response.Headers.Keys.Contains("X-Pagination"))
+            {
+                Response.Headers.Remove("X-Pagination");
+            }
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
 			return Ok(results);
 		}
 
