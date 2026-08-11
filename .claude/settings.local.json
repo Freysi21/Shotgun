@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\aft01\\\\prj\\\\Shotgun\" -Force)",
+      "Bash(Select-Object -Property Name, PSIsContainer)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet test *)",
+      "Bash(grep -A5 \"IsActive\\\\|WHERE\\\\|ORDER BY\" /tmp/efcore_mysql.txt | head -40)",
+      "Read(//tmp/**)",
+      "Bash(Select-String \"Failed \")",
+      "Bash(dotnet restore *)"
+    ]
+  }
+}
