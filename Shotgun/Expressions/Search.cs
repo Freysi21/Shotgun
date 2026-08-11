@@ -286,11 +286,11 @@ namespace Shotgun.Expressions
             {
                 if (expr == null)
                 {
-                    expr = Expression.Or(Expression.Constant(false), ContainsValueExpression<T>(key, value, member));
+                    expr = Expression.OrElse(Expression.Constant(false), ContainsValueExpression<T>(key, value, member));
                 }
                 else
                 {
-                    expr = Expression.Or(expr, ContainsValueExpression<T>(key, value, member));
+                    expr = Expression.OrElse(expr, ContainsValueExpression<T>(key, value, member));
                 }
             }
             return expr;

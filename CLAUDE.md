@@ -2,76 +2,67 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What This Is
+## What this is
 
-Shotgun is a two-package .NET library that eliminates CRUD boilerplate for EF Core–backed APIs:
+**Shotgun** is a .NET library that provides a generic base controller and repository pattern for ASP.NET Core. It ships as two NuGet packages:
 
-- **Shotgun.Entity** (`netstandard2.0`) — entity base interface and attributes
-- **Shotgun** (`net6.0`) — generic ASP.NET Core controller + EF Core repository
+- **Shotgun.Entity** (netstandard 2.0) — core `IEntity<T>` interface and attributes
+- **Shotgun** (net 6.0) — full controller + EF Core repository implementation
 
-Consumer apps inherit from the base classes to get search, paging, ordering, date-range filtering, and CSV export with no extra code.
+## Build & Test
 
-## Commands
-
-```bash
+```powershell
+# Build
 dotnet build Shotgun.sln
-dotnet test -c Release
+
+# Run all tests
+dotnet test TEST.Shotgun/TEST.Shotgun.csproj
+
+# Run a single test
+dotnet test TEST.Shotgun/TEST.Shotgun.csproj --filter "FullyQualifiedName=TEST.Shotgun.UnitTest1.Test1"
+
+# Pack NuGet packages
 dotnet pack Shotgun.Entity/Shotgun.Entity.csproj -c Release --output .
 dotnet pack Shotgun/Shotgun.csproj -c Release --output .
 ```
 
-Tests are currently commented out in the CI workflow; run them locally with the above command.
-
 ## Architecture
 
-### Generic layering
+### The three-layer pattern consumers use
 
-```
-HTTP request
-  └─ Shotgun<TEntity, TRepository, IDType>   (Controller/Shotgun.cs)
-       └─ EFCoreRepository<TEntity, TContext, IDType>   (Repository/EFCoreRepository.cs)
-            └─ DbSet<TEntity> via EF Core
-```
+1. **Entity** — inherit `IEntity<TId>`, decorate with attributes:
+   - `[DefaultSortProperty]` — marks the default sort column
+   - `[NavigationProperty]` — one-to-many collections
+   - `[SingleNavigationProperty]` — one-to-one references
+2. **Repository** — subclass `EFCoreRepository<TEntity, TContext, TId>`. Pass a `searchIncludes` string array to the base constructor to always eager-load specific relations during search.
+3. **Controller** — subclass `Shotgun<TEntity, TRepository, TId>`. All REST endpoints are inherited.
 
-Both base classes are abstract and fully generic. A consumer provides one concrete subclass of each and registers them with DI — that is enough to expose all eight endpoints.
+### Built-in endpoints (from the base controller)
 
-### The eight endpoints (Shotgun controller)
+| Method | Route | Notes |
+|--------|-------|-------|
+| GET | `/api/[controller]` | Paginated list; `?orderby=Prop&asc=true` |
+| GET | `/api/[controller]/{id}` | Single entity; `?detail=true` loads nav properties |
+| POST | `/api/[controller]` | Create |
+| PUT | `/api/[controller]/{id}` | Update |
+| DELETE | `/api/[controller]/{id}` | Delete |
+| GET | `/api/[controller]/search` | Filter + sort; accepts `dict`, `dateDict`, `orderByDict` query params |
+| GET | `/api/[controller]/GetAsCSV` | Full export (semicolon-delimited, is-IS culture) |
+| GET | `/api/[controller]/GetSearchAsCSV` | Filtered export |
 
-`GET /`, `GET /{id}`, `POST /`, `PUT /{id}`, `DELETE /{id}`,  
-`GET /search`, `GET /search/ordered`, `GET /csv`
+Pagination metadata is returned in the `X-Pagination` response header as JSON. Max page size is 50 (`PagingQuery`).
 
-Search endpoints accept query-string parameters whose keys match entity property names. Pagination metadata is written to the `X-Pagination` response header as JSON.
+### Dynamic query building (Expressions/)
 
-### Expression builders (`Shotgun/Expressions/`)
+`Search.cs` converts `Dictionary<string, string[]>` into WHERE clauses via reflection + LINQ expression trees. Multiple values per key → OR; multiple keys → AND. Handles `string` (contains), numeric types, `bool`, `Guid`. Type-conversion failures are caught and silently skipped (null expression returned).
 
-All dynamic querying is done by building LINQ expression trees — no string interpolation:
+`OrderBy.cs` resolves sort column at runtime. Fallback priority: `[DefaultSortProperty]` attribute → first `DateTime`/`DateTime?` property → `Id`.
 
-| File | Purpose |
-|------|---------|
-| `Search.cs` | Dictionary → LINQ predicate; dispatches on property type (string → Contains, bool/Guid → exact match, numeric → equality) |
-| `OrderBy.cs` | First sort: attribute → DateTime fallback → Id fallback |
-| `ThenBy.cs` | Secondary sorts |
-| `Range.cs` | From/to date range on nullable `DateTime` properties |
-| `Include.cs` | Reflection over `NavigationPropertyAttribute` / `SingleNavigationPropertyAttribute` to eager-load related entities |
+### Navigation property loading — two distinct strategies
 
-### Entity contract (`Shotgun.Entity/`)
+- **Detail endpoint** (`?detail=true`): dynamically builds `Include` calls for all properties decorated with `[NavigationProperty]` or `[SingleNavigationProperty]`.
+- **Search/list**: uses the `searchIncludes` string array passed to the repository constructor.
 
-Any entity must inherit `IEntity<T>` which enforces a typed `Id` property. Three attributes control library behaviour:
+### Publishing
 
-- `[DefaultSortProperty]` — marks the default sort column
-- `[NavigationProperty]` — marks collection navigation props for eager loading
-- `[SingleNavigationProperty]` — marks single-object navigation props for eager loading
-
-### Paging
-
-`PagingQuery` binds `pageNumber`, `pageSize` (max 50), `orderby`, and `asc` from the query string. `PagedList<T>` wraps results and carries `TotalCount`, `TotalPages`, `HasNext`, `HasPrevious`.
-
-### CSV export
-
-Uses `CsvHelper` with Icelandic locale (`is-IS`). Triggered by `GET /csv` with the same filter parameters as `/search`.
-
-## Release / CI
-
-Releases are published automatically via `.github/workflows/release-shotgun.yml` when a GitHub Release is created. The workflow builds, packs, and pushes both packages to NuGet.org using the `NUGET_API_KEY` secret. The `--skip-duplicate` flag prevents errors on re-runs.
-
-Current package version: **6.2.0** (set in each `.csproj`).
+The GitHub Actions workflow (`.github/workflows/release-shotgun.yml`) builds and packs both projects on release, adds the local output as a NuGet source (so `Shotgun` can resolve its dependency on the locally-packed `Shotgun.Entity`), then pushes both to nuget.org. Version bumps require editing `<Version>` in both `.csproj` files.
