@@ -5,11 +5,6 @@ using Xunit;
 
 namespace TEST.Shotgun.API.Tests;
 
-// NOTE: Range.cs currently has a bug — from and to are swapped when building
-// the binary expressions (line 38-39). binaryExpression1 checks `>= to` and
-// binaryExpression2 checks `<= from`, producing `date >= to AND date <= from`.
-// The tests below assert the EXPECTED (correct) behavior: records whose date
-// falls inside [from, to]. They will FAIL until the bug is fixed.
 public abstract class RangeTestsBase
 {
     protected readonly DatabaseFixture Fixture;

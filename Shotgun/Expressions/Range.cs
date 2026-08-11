@@ -26,13 +26,13 @@ namespace Shotgun.Expressions
                     Type typeIfNullable = Nullable.GetUnderlyingType(expression.Type);
                     if (typeIfNullable != null)
                     {
-                        valueExpression1 = Expression.Constant(to2, typeof(Nullable<DateTime>));
-                        valueExpression2 = Expression.Constant(from2, typeof(Nullable<DateTime>));
+                        valueExpression1 = Expression.Constant(from2, typeof(Nullable<DateTime>));
+                        valueExpression2 = Expression.Constant(to2, typeof(Nullable<DateTime>));
                     }
                     else
                     {
-                        valueExpression1 = Expression.Constant(to2, typeof(DateTime));
-                        valueExpression2 = Expression.Constant(from2, typeof(DateTime));
+                        valueExpression1 = Expression.Constant(from2, typeof(DateTime));
+                        valueExpression2 = Expression.Constant(to2, typeof(DateTime));
                     }
 
                     BinaryExpression binaryExpression1 = Expression.GreaterThanOrEqual(expression, valueExpression1);
