@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Shotgun\Shotgun.csproj" />
     <ProjectReference Include="..\Shotgun.Entity\Shotgun.Entity.csproj" />
+    <ProjectReference Include="..\Shotgun.Testing\Shotgun.Testing.csproj" />
   </ItemGroup>
 
   <ItemGroup>

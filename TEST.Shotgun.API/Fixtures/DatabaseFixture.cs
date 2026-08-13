@@ -14,11 +14,16 @@ public abstract class DatabaseFixture : IAsyncLifetime
     public List<TestEntity> SeededEntities { get; private set; } = new();
     public List<CategoryEntity> SeededCategories { get; private set; } = new();
 
+    // Exposed so E2E tests can stand up their own scoped DbContext instances
+    // against the same underlying (Testcontainers-backed) database.
+    public DbContextOptions<TestDbContext> Options { get; private set; } = null!;
+
     protected abstract Task<DbContextOptions<TestDbContext>> GetOptionsAsync();
 
     public async Task InitializeAsync()
     {
         var options = await GetOptionsAsync();
+        Options = options;
         Context = new TestDbContext(options);
         await Context.Database.EnsureCreatedAsync();
 
