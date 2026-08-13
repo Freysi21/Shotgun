@@ -4,7 +4,7 @@ using System.Web;
 using Shotgun.Entity;
 using Xunit;
 
-namespace TEST.Shotgun.API.Tests.E2E;
+namespace Shotgun.Testing;
 
 // Drives every HTTP endpoint a Shotgun<TEntity, TRepository, TId> controller exposes through
 // its full lifecycle: create -> update -> find via search -> delete -> confirm it's gone.

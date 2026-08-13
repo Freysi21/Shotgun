@@ -1,6 +1,6 @@
 using Shotgun.Entity;
 
-namespace TEST.Shotgun.API.Tests.E2E;
+namespace Shotgun.Testing;
 
 // Per-entity configuration the generic E2E harness needs. Kept intentionally small:
 // reflection could auto-generate random entities, but breaks on required FKs/navigation

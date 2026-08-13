@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Shotgun.Testing;
 using TEST.Shotgun.API.Domain;
 using TEST.Shotgun.API.Fixtures;
 using TEST.Shotgun.API.Infrastructure;
@@ -18,7 +19,7 @@ public abstract class TestEntityE2ETestsBase : ShotgunControllerE2ETestsBase<Tes
 
     protected override HttpClient CreateClient()
     {
-        var factory = new ShotgunWebApplicationFactory(services =>
+        var factory = new ShotgunWebApplicationFactory<TestEntityE2ETestsBase>(services =>
         {
             services.AddSingleton(_fixture.Options);
             services.AddScoped<TestDbContext>();
