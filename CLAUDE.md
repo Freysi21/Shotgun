@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Shotgun** is a .NET library that provides a generic base controller and repository pattern for ASP.NET Core. It ships as two NuGet packages:
 
 - **Shotgun.Entity** (netstandard 2.0) — core `IEntity<T>` interface and attributes
-- **Shotgun** (net 6.0) — full controller + EF Core repository implementation
+- **Shotgun** (net 10.0) — full controller + EF Core repository implementation
 
 ## Build & Test
 

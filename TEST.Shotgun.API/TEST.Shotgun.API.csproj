@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -24,12 +24,12 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
 
-    <!-- EF Core providers — all pinned to EF Core 6 series -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0" />
+    <!-- EF Core providers — EF Core 10 series. MySQL uses Microting's EF Core 10 fork of Pomelo (renamed package/namespace) until PomeloFoundation ships official EF Core 10 support. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.10" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+    <PackageReference Include="Microting.EntityFrameworkCore.MySql" Version="10.0.10" />
 
     <!-- Testcontainers database modules -->
     <PackageReference Include="Testcontainers.MsSql" Version="3.5.0" />
