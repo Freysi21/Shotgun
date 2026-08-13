@@ -35,6 +35,9 @@
     <PackageReference Include="Testcontainers.MsSql" Version="3.5.0" />
     <PackageReference Include="Testcontainers.PostgreSql" Version="3.5.0" />
     <PackageReference Include="Testcontainers.MySql" Version="3.5.0" />
+
+    <!-- In-process HTTP host for the E2E controller tests -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
   </ItemGroup>
 
 </Project>
